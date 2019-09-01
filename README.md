@@ -40,7 +40,7 @@ Users can:
 The technologies above follow the MEAN Stack, with the adoption of HTML and jQuery instead of Angular for the back-end.
 
 
-#Architectural Pattern
+# Architectural Pattern
 From an architectural point of view, the MVC (Model - View - Control) pattern has been adopted for the development of this application.
 
 The MVC pattern is typically used to split the application into three parts and define a consistent way to develop and deploy your application. I'll go through the project folder structure later on in the README file. Let's explain first the pattern adopted.
@@ -57,7 +57,7 @@ Although we are talking about a basic application with a few functionalities, we
 
 The View side is in the 'views' folder. The render used to generate in this case the "todolist.ejs" page is called 'ejs', explained above. "index.html", in the public folder, contains the main page, written in HTML, where a user can login before getting their tasks list and add/view/remove those.
 
-###### Other Pattern adopted
+## Other Pattern adopted
 One more pattern that has been adopted in this application is the Registry design pattern. As stated by Martin Fowler, a Registry is a well-known object that other objects can use to find common objects and services.
 
 Navigate through the 'config' folder and 'registrycnf.js' file. That is a registry configuration file in order to add modularity and flexibility to the project. It also contains all the different paths to config, modules, routes, controllers, models that have been largely adopted in this project. And of course it makes it simpler for those that need to be added in the future.
@@ -139,6 +139,7 @@ The main page of the web application is a login page - the registration is actua
 I have used Robomongo - Robo 3T to interact via a GUI with my MongoDB. Please find the open source tool at the following [link](https://robomongo.org/download).
 
 Once you have it installed on your local computer, please open it and proceed as follows, in order to create two different users to play with in your environment:
+
 [Create a new connection first](public/images/Robomongo_NewConnection.png)
 This will establish a new connection with all the databases instances that are running locally in your environment. The creation and connection of the "todo-app-db" database (which is specified in the 'config/database.js' file) happens at the time we start the server (app.js).
 
