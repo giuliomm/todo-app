@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title><%= title %></title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="/javascripts/bootstrap/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="/javascripts/bootbox/bootbox.js"></script>
+  <script type="text/javascript" src="/javascripts/todo-custom-operations.js"></script>
+  <style>
+    body{
+      background-color:#EEEEEE;
+    }
+    .todolist{
+      background-color:#FFF;
+      padding:20px 20px 10px 20px;
+      margin-top:30px;
+    }
+    .todolist h1{
+      margin:0;
+      padding-bottom:20px;
+      text-align:center;
+    }
+    .form-control{
+      border-radius:0;
+    }
+    li.ui-state-default{
+      background:#fff;
+      border:none;
+      border-bottom:1px solid #ddd;
+    }
+
+    li.ui-state-default:last-child{
+      border-bottom:none;
+    }
+
+    .todo-footer{
+      background-color:#F4FCE8;
+      margin:0 -20px -10px -20px;
+      padding: 10px 20px;
+    }
+    #done-items li{
+      padding:10px 0;
+      border-bottom:1px solid #ddd;
+      text-decoration:line-through;
+    }
+    #done-items li:last-child{
+      border-bottom:none;
+    }
+    #checkAll{
+      margin-top:10px;
+    }
+  </style>
+  <script>
+    $(document).ready(function() {
+
+      retrieveAndFillTasks();
+
+      function retrieveAndFillTasks() {
+        // retrieve tasks from db
+        $.post('/task/retrieveAllTasksByUser/<%= username %>', {}).done(function(data){
+          if(data != null){
+            var res = JSON.parse(data);
+      			for(var x in res) {
+              var markup = '<li class="ui-state-default"><div class="checkbox"><label><input type="checkbox" value="" />'+ res[x].name +'</label></div></li>';
+              $('#sortable').append(markup);
+              $('.add-todo').val('');
+            }
+            countTodos();
+          }
+    		}).fail(function(){
+    			alert("An error occurred during the operation. The file couldn't be deleted from the database!");
+    		});
+      }
+
+      //create task
+      function createTodo(todo){
+          // add todo task to db
+          $.ajax({
+      			type: "POST",
+      			url: "/task/add/",
+      			data: {"name" : todo, "user_task" : '<%= username %>'},
+      			async: true,
+      			dataType: "application/json"
+      		}).always(function(response){
+      			if(response.status == 200 && response.readyState == 4){
+              addToList(todo);
+      				//location.reload();
+      			}
+      			else {
+      				alert("An error occurred during the operation. The file couldn't be stored in the database!");
+      			}
+      		});
+      }
+
+      // remove task
+      function removeTask(item){
+        // remove todo task from db
+        $.ajax({
+          type: "POST",
+          url: "/task/delete/",
+          data: {"taskName" : item, "user_task" : '<%= username %>'},
+          async: true,
+          dataType: "application/json"
+        }).always(function(response){
+          if(response.status == 200 && response.readyState == 4){
+            //location.reload();
+            countTodos();
+          }
+          else {
+            alert("An error occurred during the operation. The file couldn't be deleted from the database!");
+          }
+        });
+      }
+
+      // add task to graphical list
+      function addToList (todo) {
+        var markup = '<li class="ui-state-default"><div class="checkbox"><label><input type="checkbox" value="" />'+ todo +'</label></div></li>';
+        $('#sortable').append(markup);
+        $('.add-todo').val('');
+        countTodos();
+      }
+
+      function done(doneItem){
+        var done = doneItem;
+        var markup = '<li>'+ done +'<button class="btn btn-default btn-xs pull-right  remove-item"><span class="glyphicon glyphicon-remove"></span></button></li>';
+        //$('#done-items').append(markup);
+        $('.remove').remove();
+      }
+
+      // mark task as done and remove it
+      $('.todolist').on('change','#sortable li input[type="checkbox"]',function(){
+          if($(this).prop('checked')){
+              var doneItem = $(this).parent().parent().find('label').text();
+              $(this).parent().parent().parent().addClass('remove');
+              removeTask(doneItem);
+              done(doneItem);
+              countTodos();
+          }
+      });
+
+      //create todo
+      $('.add-todo').on('keypress',function (e) {
+        e.preventDefault
+        if (e.which == 13) {
+             if($(this).val() != ''){
+             var todo = $(this).val();
+              createTodo(todo);
+              countTodos();
+             }else{
+                 // some validation
+             }
+        }
+      });
+
+      // all done btn
+      $('#add-btn').click(function () {
+        if($('#todo-text').val() != ''){
+          var todo = $('#todo-text').val();
+          createTodo(todo);
+          countTodos();
+        } else{
+           // some validation
+        }
+      });
+
+      //mark task as done
+      function removeTaskFromList(doneItem){
+        $(doneItem).parent().remove();
+      }
+
+      function countTodos(){
+          var count = $("#sortable li").length;
+          $('.count-todos').html(count);
+      }
+    });
+  </script>
+</head>
+<body>
+  <!-- Navigation bar with Home redirection button -->
+  <nav class="navbar navbar-light bg-light">
+    <a class="navbar-brand" href="#">
+      <button id="home-btn" type="button" class="btn btn-default btn-lg">
+          <span class="glyphicon glyphicon-home"></span> Home
+        </button>
+    </a>
+  </nav>
+  <div class="jumbotron text-center">
+    <h1>Todo App</h1>
+    <p>This is a simple Todo Web Appplication with authentication enabled.</p>
+  </div>
+  <div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="todolist not-done">
+             <h1>Todos</h1>
+                <input id="todo-text" type="text" class="form-control add-todo" placeholder="Add todo">
+                    <br>
+                    <button id="add-btn" class="btn btn-success">Add</button>
+                    <hr>
+                    <ul id="sortable" class="list-unstyled">
+                </ul>
+                <div class="todo-footer">
+                    <strong><span class="count-todos"></span></strong> Items Left
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

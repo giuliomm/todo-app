@@ -1,0 +1,16 @@
+==================================================  Server Certificate ===============================================
+OpenSSL command: openssl (or openssl.exe if you are on Windows) genrsa -aes256 -out server.key 4096
+
+AES 256 - CBC
+4096 RSA KEY
+Password: "specify your password here"
+
+openssl req -new -key server.key -out server.csr -config openssl.cnf -sha512
+
+openssl rsa -in server.key -out server2.key
+
+openssl x509 -req -days 365 -in server.csr -signkey server2.key -out server.crt -sha256
+
+To verify SHA256 sign:
+
+openssl x509 -noout -text -in server.crt
